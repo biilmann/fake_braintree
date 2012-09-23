@@ -1,10 +1,14 @@
 require 'capybara'
 require 'capybara/server'
-require 'rack/handler/thin'
+begin
+  require 'rack/handler/thin'
+rescue LoadError
+  require 'rack/handler/webrick'
+end
 
 class FakeBraintree::Server
   def boot
-    with_thin_runner do
+    with_runner do
       server = Capybara::Server.new(FakeBraintree::SinatraApp)
       server.boot
       ENV['GATEWAY_PORT'] = server.port.to_s
@@ -12,14 +16,17 @@ class FakeBraintree::Server
   end
 
   private
-
-  def with_thin_runner
+  def with_runner
     default_server_process = Capybara.server
     Capybara.server do |app, port|
-      Rack::Handler::Thin.run(app, :Port => port)
+      runner.run(app, :Port => port)
     end
     yield
   ensure
     Capybara.server(&default_server_process)
+  end
+
+  def runner
+    defined?(Rack::Hander::Thin) ? Rack::Handler::This : Rack::Handler::WEBrick
   end
 end
