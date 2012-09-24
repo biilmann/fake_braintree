@@ -22,7 +22,7 @@ class FakeBraintree::Server
   def with_runner
     default_server_process = Capybara.server
     Capybara.server do |app, port|
-      runner.run(app, :Port => port)
+      runner.run(app, :Port => port, :AccessLog => [])
     end
     yield
   ensure
