@@ -1,5 +1,7 @@
 require 'capybara'
 require 'capybara/server'
+require 'rack/deflater'
+require 'rack/builder'
 begin
   require 'rack/handler/thin'
 rescue LoadError
@@ -8,6 +10,7 @@ end
 
 class FakeBraintree::Server
   def boot
+    puts "Runner is #{runner}"
     with_runner do
       server = Capybara::Server.new(FakeBraintree::SinatraApp)
       server.boot
@@ -27,6 +30,6 @@ class FakeBraintree::Server
   end
 
   def runner
-    defined?(Rack::Hander::Thin) ? Rack::Handler::This : Rack::Handler::WEBrick
+    defined?(Thin) ? Rack::Handler::Thin : Rack::Handler::WEBrick
   end
 end
